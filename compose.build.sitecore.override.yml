@@ -1,0 +1,155 @@
+services:
+  mssql:
+    image: ${SITECORE_DOCKER_REGISTRY}nonproduction/mssql-developer:${SQL_VERSION}
+    isolation: ${ISOLATION}
+    environment:
+      SA_PASSWORD: ${SQL_SA_PASSWORD}
+      ACCEPT_EULA: "Y"
+    volumes:
+      - ${LOCAL_DATA_PATH}\mssql:C:\data
+    deploy:
+      resources:
+        limits:
+          cpus: "2"
+          memory: 3GB
+
+  mssql-init:
+    image: ${SITECORE_DOCKER_REGISTRY}sitecore-xm1-mssql-init:${SITECORE_VERSION}
+    isolation: ${ISOLATION}
+    environment:
+      SQL_SERVER: mssql
+      SQL_ADMIN_LOGIN: ${SQL_SA_LOGIN}
+      SQL_ADMIN_PASSWORD: ${SQL_SA_PASSWORD}
+      SQL_DATABASE_PREFIX: ${SQL_DATABASE_PREFIX}
+      SITECORE_ADMIN_PASSWORD: ${SITECORE_ADMIN_PASSWORD}
+      POST_DEPLOYMENT_WAIT_PERIOD: 300
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "powershell",
+          "-Command",
+          "if ([System.Environment]::GetEnvironmentVariable('DatabasesDeploymentStatus', 'Machine') -eq 'Complete') { exit 0 } else { exit 1 }",
+        ]
+      start_period: 300s
+      interval: 5s
+    depends_on:
+      mssql:
+        condition: service_healthy
+
+  solr:
+    isolation: ${ISOLATION}
+    volumes:
+      - ${LOCAL_DATA_PATH}\solr:C:\data
+    environment:
+      SOLR_MODE: solrcloud
+      SOLR_LOG_LEVEL: WARN
+      SOLR_HEAP: 2000M
+      SOLR_JAVA_MEM: -Xms2000M -Xmx2000M
+      SOLR_OPTS: -Dlog4j2.formatMsgNoLookups=true -javaagent:C:/solr/server/solr-webapp/webapp/WEB-INF/lib/opentelemetry-javaagent.jar
+      OTEL_SERVICE_NAME: solr
+      OTEL_JAVAAGENT_LOGGING: simple
+      OTEL_JAVAAGENT_DEBUG: "false"
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://aspire-dashboard:18889
+      OTEL_EXPORTER_OTLP_PROTOCOL: grpc
+      OTEL_TRACES_SAMPLER: always_on
+    deploy:
+      resources:
+        limits:
+          cpus: "2"
+          memory: 3GB
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "powershell",
+          "-Command",
+          "try { $$statusCode = (iwr http://localhost:8983/solr/admin/cores?action=STATUS -UseBasicParsing).StatusCode; if ($$statusCode -eq 200) { exit 0 } else { exit 1} } catch { exit 1 }",
+        ]
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.solr.entrypoints=websecure"
+      - "traefik.http.routers.solr.rule=Host(`${SOLR_HOST}`)"
+      - "traefik.http.routers.solr.tls=true"
+      - "traefik.http.services.solr.loadbalancer.server.port=8983"
+
+  solr-init:
+    image: ${SITECORE_DOCKER_REGISTRY}sitecore-xm1-solr-init:${SITECORE_VERSION}
+    isolation: ${ISOLATION}
+    environment:
+      SITECORE_SOLR_CONNECTION_STRING: http://solr:8983/solr
+      SOLR_CORE_PREFIX_NAME: ${SOLR_CORE_PREFIX_NAME}
+    depends_on:
+      solr:
+        condition: service_healthy
+
+  id:
+    image: ${SITECORE_DOCKER_REGISTRY}sitecore-id7:${SITECORE_VERSION}
+    isolation: ${ISOLATION}
+    volumes:
+      - ${HOST_LICENSE_FOLDER}:C:\license:r
+    environment:
+      SITECORE_LICENSE_LOCATION: C:\license\license.xml
+      Sitecore_Sitecore__IdentityServer__SitecoreMemberShipOptions__ConnectionString: Data Source=${SQL_SERVER};Initial Catalog=${SQL_DATABASE_PREFIX}.Core;User ID=${SQL_SA_LOGIN};Password=${SQL_SA_PASSWORD}
+      Sitecore_Sitecore__IdentityServer__AccountOptions__PasswordRecoveryUrl: https://${CM_HOST_PLATFORM}/sitecore/login?rc=1
+      Sitecore_Sitecore__IdentityServer__Clients__PasswordClient__ClientSecrets__ClientSecret1: ${SITECORE_IDSECRET}
+      Sitecore_Sitecore__IdentityServer__Clients__DefaultClient__AllowedCorsOrigins__AllowedCorsOriginsGroup1: https://${CM_HOST_PLATFORM}
+      Sitecore_Sitecore__IdentityServer__CertificateRawData: ${SITECORE_ID_CERTIFICATE}
+      Sitecore_Sitecore__IdentityServer__PublicOrigin: https://${ID_HOST}
+      Sitecore_Sitecore__IdentityServer__CertificateRawDataPassword: ${SITECORE_ID_CERTIFICATE_PASSWORD}
+    healthcheck:
+      test: ["CMD", "pwsh", "-command", "C:/Healthchecks/Healthcheck.ps1"]
+      timeout: 300s
+    depends_on:
+      mssql-init:
+        condition: service_healthy
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.id-secure.entrypoints=websecure"
+      - "traefik.http.routers.id-secure.rule=Host(`${ID_HOST}`)"
+      - "traefik.http.routers.id-secure.tls=true"
+
+  cm:
+    isolation: ${ISOLATION}
+    volumes:
+      - ${LOCAL_DEPLOY_PATH}\platform:C:\deploy
+      - ${LOCAL_DATA_PATH}\cm\mediacache:C:\inetpub\wwwroot\App_Data\MediaCache
+      - ${LOCAL_DATA_PATH}\cm\packages:C:\inetpub\wwwroot\App_Data\packages
+      - ${HOST_LICENSE_FOLDER}:C:\license:r
+    environment:
+      SITECORE_LICENSE_LOCATION: C:\license\license.xml
+      Sitecore_AppSettings_instanceNameMode:define: default
+      Sitecore_ConnectionStrings_Core: Data Source=${SQL_SERVER};Initial Catalog=${SQL_DATABASE_PREFIX}.Core;User ID=${SQL_SA_LOGIN};Password=${SQL_SA_PASSWORD}
+      Sitecore_ConnectionStrings_Security: Data Source=${SQL_SERVER};Initial Catalog=${SQL_DATABASE_PREFIX}.Core;User ID=${SQL_SA_LOGIN};Password=${SQL_SA_PASSWORD}
+      Sitecore_ConnectionStrings_Master: Data Source=${SQL_SERVER};Initial Catalog=${SQL_DATABASE_PREFIX}.Master;User ID=${SQL_SA_LOGIN};Password=${SQL_SA_PASSWORD}
+      Sitecore_ConnectionStrings_Web: Data Source=${SQL_SERVER};Initial Catalog=${SQL_DATABASE_PREFIX}.Web;User ID=${SQL_SA_LOGIN};Password=${SQL_SA_PASSWORD}
+      Sitecore_ConnectionStrings_ExperienceForms: Data Source=${SQL_SERVER};Initial Catalog=${SQL_DATABASE_PREFIX}.ExperienceForms;User ID=${SQL_SA_LOGIN};Password=${SQL_SA_PASSWORD}
+      Sitecore_ConnectionStrings_Solr.Search: http://solr:8983/solr;solrCloud=true
+      Sitecore_ConnectionStrings_SitecoreIdentity.Secret: ${SITECORE_IDSECRET}
+      Sitecore_AppSettings_Telerik.AsyncUpload.ConfigurationEncryptionKey: ${TELERIK_ENCRYPTION_KEY}
+      Sitecore_AppSettings_Telerik.Upload.ConfigurationHashKey: ${TELERIK_ENCRYPTION_KEY}
+      Sitecore_AppSettings_Telerik.Web.UI.DialogParametersEncryptionKey: ${TELERIK_ENCRYPTION_KEY}
+      Sitecore_Identity_Server_Authority: https://${ID_HOST}
+      Sitecore_Identity_Server_InternalAuthority: http://id
+      Sitecore_Identity_Server_CallbackAuthority: https://${CM_HOST_PLATFORM}
+      Sitecore_Identity_Server_Require_Https: "false"
+      SOLR_CORE_PREFIX_NAME: ${SOLR_CORE_PREFIX_NAME}
+      MEDIA_REQUEST_PROTECTION_SHARED_SECRET: ${MEDIA_REQUEST_PROTECTION_SHARED_SECRET}
+      LOG_LEVEL_VALUE: INFO
+      SITECORE_DEVELOPMENT_PATCHES: CustomErrorsOff,DebugOn,RobotDetectionOff
+      Sitecore_AppSettings_exmEnabled:define: "no"
+      Sitecore_AppSettings_env:define: "Development"
+    entrypoint: powershell.exe -Command "& C:/tools/entrypoints/iis/Development.ps1"
+    depends_on:
+      mssql:
+        condition: service_healthy
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.cm-secure.entrypoints=websecure"
+      - "traefik.http.routers.cm-secure.rule=Host(`${CM_HOST_PLATFORM}`)"
+      - "traefik.http.routers.cm-secure.tls=true"
+    deploy:
+      resources:
+        limits:
+          cpus: "2"
+          memory: 2GB

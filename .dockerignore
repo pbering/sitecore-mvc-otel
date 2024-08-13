@@ -1,0 +1,15 @@
+# folders
+.git
+.vs
+.vscode
+docker/
+items/
+**/bin/
+**/obj/
+**/out/
+
+# files
+.env
+.gitignore
+compose*
+**/*.md

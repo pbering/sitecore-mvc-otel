@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<configuration xmlns:xdt="http://schemas.microsoft.com/XML-Document-Transform" xmlns:asmv1="urn:schemas-microsoft-com:asm.v1">
+  <appSettings>
+    <add xdt:Transform="Insert" key="env:define" value="Production" />
+  </appSettings>
+
+  <system.web>
+    <compilation optimizeCompilations="true" xdt:Transform="SetAttributes" />
+  </system.web>
+</configuration>

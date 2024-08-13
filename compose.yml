@@ -1,0 +1,62 @@
+include:
+  - path:
+      - ./compose.build.sitecore.yml
+      - ./compose.build.sitecore.override.yml
+
+services:
+  traefik:
+    image: ${TRAEFIK_IMAGE}
+    isolation: ${ISOLATION}
+    command:
+      - "--ping"
+      - "--api.insecure=true"
+      - "--providers.docker.endpoint=npipe:////./pipe/docker_engine"
+      - "--providers.docker.exposedByDefault=false"
+      - "--providers.file.directory=C:/etc/traefik/config/dynamic"
+      - "--entryPoints.web.address=:80"
+      - "--entryPoints.websecure.address=:443"
+      - "--tracing.otlp=true"
+      - "--tracing.otlp.grpc=true"
+      - "--tracing.otlp.grpc.insecure=true"
+      - "--tracing.otlp.grpc.endpoint=aspire-dashboard:18889"
+      - "--metrics.otlp=true"
+      - "--metrics.otlp.addRoutersLabels=true"
+      - "--metrics.otlp.addServicesLabels=true"
+      - "--metrics.otlp.grpc=true"
+      - "--metrics.otlp.grpc.insecure=true"
+      - "--metrics.otlp.grpc.endpoint=aspire-dashboard:18889"
+    ports:
+      - "443:443"
+      - "8079:8080"
+    healthcheck:
+      test: ["CMD", "traefik", "healthcheck", "--ping"]
+    volumes:
+      - source: \\.\pipe\docker_engine\
+        target: \\.\pipe\docker_engine\
+        type: npipe
+      - ./docker/data/traefik:C:/etc/traefik
+    depends_on:
+      aspire-dashboard:
+        condition: service_started
+      id:
+        condition: service_started
+      cm:
+        condition: service_started
+
+  aspire-dashboard:
+    image: ghcr.io/pbering/dotnet-aspire-dashboard-windows:8.1.0-ltsc2022
+    isolation: ${ISOLATION}
+    ports:
+      - "4317:18889"
+    environment:
+      DOTNET_DASHBOARD_UNSECURED_ALLOW_ANONYMOUS: true
+      DASHBOARD__TELEMETRYLIMITS__MAXLOGCOUNT: 2000
+      DASHBOARD__TELEMETRYLIMITS__MAXTRACECOUNT: 2000
+      DASHBOARD__TELEMETRYLIMITS__MAXMETRICSCOUNT: 5000
+      DASHBOARD__APPLICATIONNAME: smotel
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.aspire.entrypoints=websecure"
+      - "traefik.http.routers.aspire.rule=Host(`${ASPIRE_HOST}`)"
+      - "traefik.http.routers.aspire.tls=true"
+      - "traefik.http.services.aspire.loadbalancer.server.port=18888"

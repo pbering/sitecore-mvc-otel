@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Target Name="ExcludeSitecoreAssemblies" BeforeTargets="ExcludeFilesFromPackage">
+    <ItemGroup>
+      <ExcludeFromPackageFiles Include="@(SitecoreAssemblies -> 'bin\%(Filename)%(Extension)')" Exclude="bin\System.Diagnostics.DiagnosticSource.*;bin\Microsoft.Extensions.DependencyInjection.Abstractions.*;bin\Microsoft.Extensions.Options.*;bin\Microsoft.Extensions.Configuration.Abstractions.*;bin\Microsoft.Extensions.DependencyInjection.*;bin\Microsoft.Bcl.AsyncInterfaces.*;bin\Microsoft.Extensions.Configuration.*;bin\Microsoft.Extensions.Primitives.*;bin\Microsoft.Extensions.Logging.Abstractions.*;bin\Microsoft.Extensions.Logging.*;bin\Microsoft.Extensions.Configuration.Binder.*" />
+      <ExcludeFromPackageFiles Include="@(SitecoreAssemblies -> 'bin\%(Filename).pdb')" />
+      <ExcludeFromPackageFiles Include="@(SitecoreAssemblies -> 'bin\%(Filename).xml')" />
+    </ItemGroup>
+  </Target>
+</Project>
