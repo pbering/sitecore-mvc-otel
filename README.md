@@ -16,7 +16,7 @@ Shows how to implement [OpenTelemetry](https://opentelemetry.io/) support for Si
 
 ### Notes
 
-- For now it's not possible to add [OpenTelemetry .NET Automatic Instrumentation](https://opentelemetry.io/docs/zero-code/net/) to the ID service as it can only run on .NET 6.0 (as of 10.4.0).
+- For now it's not possible to add [OpenTelemetry .NET Automatic Instrumentation](https://opentelemetry.io/docs/zero-code/net/) to the ID service as it can only run on .NET 6.0 (as of 10.4.0) and automatic instrumentation requires .NET 7.0 or later.
 
 ## Contributing
 
