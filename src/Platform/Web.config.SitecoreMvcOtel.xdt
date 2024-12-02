@@ -33,7 +33,7 @@
         <assemblyIdentity name="Microsoft.Bcl.AsyncInterfaces" publicKeyToken="cc7b13ffcd2ddd51" />
         <bindingRedirect oldVersion="0.0.0.0-8.0.0.0" newVersion="8.0.0.0" />
       </dependentAssembly>
-      <dependentAssembly xdt:Transform="Replace" xdt:Locator="Condition(asmv1:assemblyIdentity/@name='Microsoft.Bcl.AsyncInterfaces')">
+      <dependentAssembly xdt:Transform="Replace" xdt:Locator="Condition(asmv1:assemblyIdentity/@name='Microsoft.Extensions.Configuration.Abstractions')">
         <assemblyIdentity name="Microsoft.Extensions.Configuration.Abstractions" publicKeyToken="adb9793829ddae60" />
         <bindingRedirect oldVersion="0.0.0.0-8.0.0.0" newVersion="8.0.0.0" />
       </dependentAssembly>
