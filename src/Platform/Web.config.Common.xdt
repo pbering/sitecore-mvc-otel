@@ -8,4 +8,11 @@
   <system.web>
     <compilation optimizeCompilations="true" xdt:Transform="SetAttributes" />
   </system.web>
+
+  <runtime>
+    <dependentAssembly xdt:Transform="Replace" xdt:Locator="Condition(asmv1:assemblyIdentity/@name='System.Security.Cryptography.Xml')">
+      <assemblyIdentity name="System.Security.Cryptography.Xml" publicKeyToken="cc7b13ffcd2ddd51" />
+      <bindingRedirect oldVersion="0.0.0.0-8.0.0.0" newVersion="8.0.0.0" />
+    </dependentAssembly>
+  </runtime>
 </configuration>

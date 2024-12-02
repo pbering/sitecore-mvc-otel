@@ -64,6 +64,7 @@
   <ItemGroup>
     <PackageReference Include="Sitecore.Kernel" />
     <PackageReference Include="Sitecore.Assemblies.Platform" />
+    <PackageReference Include="System.Security.Cryptography.Xml" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="App_Config\Environment\Development.config" />

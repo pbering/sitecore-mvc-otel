@@ -193,6 +193,12 @@
           "System.Runtime.CompilerServices.Unsafe": "6.0.0"
         }
       },
+      "System.Security.Cryptography.Xml": {
+        "type": "Direct",
+        "requested": "[8.0.2, 8.0.2]",
+        "resolved": "8.0.2",
+        "contentHash": "aDM/wm0ZGEZ6ZYJLzgqjp2FZdHbDHh6/OmpGfb7AdZ105zYmPn/83JRU2xLIbwgoNz9U1SLUTJN0v5th3qmvjA=="
+      },
       "Google.Protobuf": {
         "type": "Transitive",
         "resolved": "3.22.5",
@@ -409,35 +415,6 @@
         "type": "Transitive",
         "resolved": "4.0.0",
         "contentHash": "hWPhJxc453RCa8Z29O91EmfGeZIHX1ZH2A8L6lYQVSaKzku2DfArSfMEb1/MYYzPQRJZeu0c9dmYeJKxW5Fgng=="
-      },
-      "System.Security.AccessControl": {
-        "type": "Transitive",
-        "resolved": "4.5.0",
-        "contentHash": "vW8Eoq0TMyz5vAG/6ce483x/CP83fgm4SJe5P8Tb1tZaobcvPrbMEL7rhH1DRdrYbbb6F0vq3OlzmK0Pkwks5A==",
-        "dependencies": {
-          "System.Security.Principal.Windows": "4.5.0"
-        }
-      },
-      "System.Security.Cryptography.Xml": {
-        "type": "Transitive",
-        "resolved": "4.5.0",
-        "contentHash": "i2Jn6rGXR63J0zIklImGRkDIJL4b1NfPSEbIVHBlqoIb12lfXIigCbDRpDmIEzwSo/v1U5y/rYJdzZYSyCWxvg==",
-        "dependencies": {
-          "System.Security.Permissions": "4.5.0"
-        }
-      },
-      "System.Security.Permissions": {
-        "type": "Transitive",
-        "resolved": "4.5.0",
-        "contentHash": "9gdyuARhUR7H+p5CjyUB/zPk7/Xut3wUSP8NJQB6iZr8L3XUXTMdoLeVAg9N4rqF8oIpE7MpdqHdDHQ7XgJe0g==",
-        "dependencies": {
-          "System.Security.AccessControl": "4.5.0"
-        }
-      },
-      "System.Security.Principal.Windows": {
-        "type": "Transitive",
-        "resolved": "4.5.0",
-        "contentHash": "U77HfRXlZlOeIXd//Yoj6Jnk8AXlbeisf1oq1os+hxOGVnuG+lGSfGqTwTZBoORFF6j/0q7HXIl8cqwQ9aUGqQ=="
       },
       "System.Threading.Tasks.Extensions": {
         "type": "Transitive",

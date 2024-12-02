@@ -12,6 +12,7 @@
     <PackageReference Include="OpenTelemetry.Instrumentation.Http" />
     <PackageReference Include="OpenTelemetry.Instrumentation.SqlClient" />
     <PackageReference Include="OpenTelemetry.Resources.ProcessRuntime" />
+    <PackageReference Include="System.Security.Cryptography.Xml" />
     <PackageReference Include="System.Diagnostics.DiagnosticSource" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
